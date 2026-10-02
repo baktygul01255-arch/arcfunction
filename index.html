@@ -1,0 +1,837 @@
+<title>Тренажёр по аркфункциям</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;1,500&family=PT+Sans:wght@400;700&family=PT+Serif:ital@0;1&family=PT+Mono&display=swap">
+<style>
+/* Layout: школьная тетрадь в клетку — красная линия полей слева, вкладки сверху, рабочие панели на клетчатой бумаге */
+:root{
+  --paper:#f6f7fb; --surface:#ffffff; --ink:#1c2746; --muted:#5b6582; --line:#d8ddea;
+  --grid:rgba(60,95,170,.09); --accent:#2d4db3; --accent-soft:#e4e9f9; --margin:#d1475a;
+  --ok:#1d8656; --ok-soft:#e1f3ea; --bad:#c13838; --bad-soft:#fbe6e6;
+  --c-asin:#2d4db3; --c-acos:#c2410c; --c-atg:#15803d; --c-actg:#7c3aed;
+  --f-display:"Alegreya",Georgia,"Times New Roman",serif;
+  --f-body:"PT Sans","Segoe UI",Arial,sans-serif;
+  --f-math:"PT Serif",Georgia,serif;
+  --f-mono:"PT Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#11162a; --surface:#171e36; --ink:#e5e9f4; --muted:#9aa3bf; --line:#2a3352;
+  --grid:rgba(140,170,255,.07); --accent:#93a9ff; --accent-soft:#222c4c; --margin:#ff7c8b;
+  --ok:#4fc68f; --ok-soft:#173528; --bad:#ff7b7b; --bad-soft:#3a1e24;
+  --c-asin:#93a9ff; --c-acos:#ff9b63; --c-atg:#5bd38d; --c-actg:#bb97ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#11162a; --surface:#171e36; --ink:#e5e9f4; --muted:#9aa3bf; --line:#2a3352;
+  --grid:rgba(140,170,255,.07); --accent:#93a9ff; --accent-soft:#222c4c; --margin:#ff7c8b;
+  --ok:#4fc68f; --ok-soft:#173528; --bad:#ff7b7b; --bad-soft:#3a1e24;
+  --c-asin:#93a9ff; --c-acos:#ff9b63; --c-atg:#5bd38d; --c-actg:#bb97ff; color-scheme:dark}
+:root[data-theme="light"]{color-scheme:light}
+
+*{box-sizing:border-box}
+html{font-size:137.5%}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:1rem;line-height:1.55;transition:background .2s,color .2s}
+.wrap{max-width:min(72rem,100%);margin:0 auto;padding-inline:16px;padding-block:0 48px}
+header.top{position:relative;padding-block:28px 20px;padding-left:22px;display:flex;flex-wrap:wrap;gap:16px 24px;justify-content:space-between;align-items:flex-start}
+header.top::before{content:"";position:absolute;left:0;top:24px;bottom:16px;width:2px;background:var(--margin)}
+.htext{flex:1 1 520px;min-width:0}
+.ctrls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sw{display:inline-flex;border:1px solid var(--line);border-radius:999px;background:var(--surface);padding:3px;gap:2px}
+.sw button{font:inherit;font-size:.85rem;font-weight:700;letter-spacing:.04em;border:0;background:none;color:var(--muted);border-radius:999px;padding:5px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.sw button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.sw svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(2.1rem,5vw,3.2rem);line-height:1.05;margin:.25em 0 .2em;text-wrap:balance}
+h1 em{font-style:italic;font-weight:500;color:var(--accent)}
+.lead{max-width:62ch;color:var(--muted);margin:0}
+h2{font-family:var(--f-display);font-size:1.7rem;margin:0 0 .4em;text-wrap:balance}
+h3{font-family:var(--f-display);font-size:1.3rem;margin:0}
+p{margin:0}
+
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--line);display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin-bottom:28px}
+nav.tabs button{font:inherit;font-weight:700;background:none;border:0;border-bottom:3px solid transparent;color:var(--muted);padding:12px 14px 10px;cursor:pointer;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+nav.tabs button:hover{color:var(--ink)}
+button:focus-visible,input:focus-visible,.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.m{font-family:var(--f-math);white-space:nowrap}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.82em;line-height:1.12;margin:0 .08em}
+.fr>span:first-child{border-bottom:1px solid currentColor;padding:0 .18em}
+.fr>span:last-child{padding:0 .18em}
+
+.cards{display:flex;flex-direction:column;gap:20px}
+.hint{color:var(--muted);margin:0}
+.fcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start;min-width:0}
+@media (max-width:900px){.fcard{grid-template-columns:1fr}}
+.ftext{display:flex;flex-direction:column;gap:12px;min-width:0}
+.fgraph{margin:0;display:flex;flex-direction:column;gap:10px;position:sticky;top:4rem;min-width:0}
+.fgraph svg{display:block;width:100%;height:auto}
+.fgraph figcaption{font-size:.95rem;line-height:1.6;min-height:3.2em;border-left:3px solid var(--fc);padding-left:12px}
+.props{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.prop{font:inherit;width:100%;text-align:left;display:grid;grid-template-columns:minmax(8.5em,auto) 1fr;gap:4px 14px;align-items:center;background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;color:var(--ink);cursor:pointer}
+.prop:hover{border-color:var(--fc)}
+.prop[aria-pressed="true"]{border-color:var(--fc);background:var(--accent-soft);box-shadow:inset 4px 0 0 var(--fc)}
+.prop .pl{color:var(--muted);font-size:.9rem}
+.prop .pv{white-space:normal}
+@media (max-width:520px){.prop{grid-template-columns:1fr}}
+.fcard .head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.fcard .sym{font-family:var(--f-math);font-size:1.5rem}
+.fcard .tag{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.def{border-left:3px solid var(--fc);padding-left:12px}
+.formula{font-family:var(--f-math);font-size:1.08rem;background:var(--accent-soft);border-radius:6px;padding:10px 12px;overflow-x:auto}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.95rem}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-family:var(--f-math)}
+
+section.block{margin-top:36px}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-family:var(--f-math);font-variant-numeric:tabular-nums}
+th,td{padding:10px 12px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+th:first-child,td:first-child{text-align:left;font-family:var(--f-body);font-weight:700;position:sticky;left:0;background:var(--surface)}
+thead th{color:var(--muted);font-weight:400}
+.note{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.note > div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.note ul{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:6px}
+
+.panel{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:20px;align-items:start}
+@media (max-width:780px){.panel{grid-template-columns:1fr}}
+.paper-grid{background-color:var(--surface);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:20px 20px;border:1px solid var(--line);border-radius:10px}
+#circle{width:100%;height:auto;display:block}
+.side{display:flex;flex-direction:column;gap:16px;min-width:0}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button,.chip{font:inherit;font-family:var(--f-math);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:4px 10px;font-size:.92rem}
+.chip.on{border-color:var(--accent);background:var(--accent-soft)}
+label.lbl{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.readout{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.readout .big{font-family:var(--f-math);font-size:1.6rem;line-height:1.3}
+.readout .sub{font-family:var(--f-mono);color:var(--muted);font-size:.9rem;margin-top:6px}
+.readout .how{margin-top:10px;font-size:.95rem}
+.legend-dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle;margin-right:6px}
+
+#graphBox{padding:0;overflow:hidden}
+#graph{display:block;width:100%}
+.toggles{display:flex;flex-wrap:wrap;gap:8px}
+.tog{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;cursor:pointer;font-family:var(--f-math)}
+.tog input{accent-color:var(--accent);margin:0}
+
+.qwrap{max-width:720px}
+.bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-bottom:16px}
+.stat{font-family:var(--f-mono);font-size:.9rem;color:var(--muted)}
+.stat b{color:var(--ink);font-weight:400}
+.qcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px;display:flex;flex-direction:column;gap:16px}
+.qcat{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.qtext{font-size:1.25rem;line-height:1.6}
+.qtext .m{font-size:1.15em}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px}
+.opt{font:inherit;font-family:var(--f-math);font-size:1.1rem;text-align:left;padding:12px 14px;border:1.5px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);cursor:pointer;display:flex;gap:10px;align-items:center;min-height:2.6em}
+.opt .k{font-family:var(--f-mono);font-size:.8rem;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.expl{border-radius:8px;padding:12px 14px;font-size:1rem;line-height:1.7}
+.expl.ok{background:var(--ok-soft)} .expl.no{background:var(--bad-soft)}
+.expl b{display:block;margin-bottom:2px}
+.btn{font:inherit;font-weight:700;background:var(--accent);color:var(--paper);border:0;border-radius:8px;padding:11px 20px;cursor:pointer;align-self:flex-start}
+.btn.ghost{background:none;color:var(--accent);border:1.5px solid var(--accent)}
+.progress{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.progress > i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.result{display:flex;flex-direction:column;gap:14px}
+.score{font-family:var(--f-display);font-size:3rem;line-height:1}
+.review{display:flex;flex-direction:column;gap:10px}
+.review div{border-left:3px solid var(--bad);padding:4px 0 4px 12px;line-height:1.7}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="htext">
+      <div class="eyebrow" data-i="eyebrow"></div>
+      <h1 data-i="h1"></h1>
+      <p class="lead" data-i="lead"></p>
+    </div>
+    <div class="ctrls">
+      <div class="sw" id="langSw" role="group" aria-label="Тіл / Язык">
+        <button data-lang="ru">РУС</button><button data-lang="kz">ҚАЗ</button>
+      </div>
+      <div class="sw" id="sizeSw" role="group" aria-label="Размер шрифта">
+        <button data-sz="16">A</button><button data-sz="22">A+</button><button data-sz="28">A++</button>
+      </div>
+      <div class="sw" id="themeSw" role="group" aria-label="Тема">
+        <button data-th="light"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span data-i="light"></span></button>
+        <button data-th="dark"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg><span data-i="dark"></span></button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="t-theory" data-tab="theory" aria-selected="true" data-i="tTheory"></button>
+    <button role="tab" id="t-circle" data-tab="circle" aria-selected="false" data-i="tCircle"></button>
+    <button role="tab" id="t-graphs" data-tab="graphs" aria-selected="false" data-i="tGraphs"></button>
+    <button role="tab" id="t-train" data-tab="train" aria-selected="false" data-i="tTrain"></button>
+    <button role="tab" id="t-test" data-tab="test" aria-selected="false" data-i="tTest"></button>
+  </nav>
+
+  <main>
+  <div id="p-theory" class="pane">
+    <div class="cards" id="defCards"></div>
+    <section class="block">
+      <h2 data-i="tblTitle"></h2>
+      <div class="tbl-wrap" style="margin-bottom:12px"><table id="tblSC"></table></div>
+      <div class="tbl-wrap"><table id="tblTC"></table></div>
+    </section>
+    <section class="block">
+      <h2 data-i="propsTitle"></h2>
+      <div class="note">
+        <div><h3 data-i="propsFn"></h3><div class="tbl-wrap"><table id="tblProps"></table></div></div>
+        <div><h3 data-i="ident"></h3><ul class="m" id="identities"></ul></div>
+        <div><h3 data-i="eqTitle"></h3><ul class="m" id="eqs"></ul>
+          <p style="color:var(--muted);font-size:.92rem" data-i="eqNote"></p></div>
+      </div>
+    </section>
+  </div>
+
+  <div id="p-circle" class="pane" hidden>
+    <div class="panel">
+      <div class="paper-grid"><svg id="circle" viewBox="0 0 420 440" role="img" aria-label="unit circle"></svg></div>
+      <div class="side">
+        <div>
+          <label class="lbl" data-i="fn"></label>
+          <div class="seg" id="cFn" style="margin-top:6px"></div>
+        </div>
+        <div>
+          <label class="lbl" for="cSlider"><span data-i="numA"></span> <span id="cAval" class="m" style="text-transform:none;letter-spacing:0;font-size:1rem;color:var(--ink)"></span></label>
+          <input type="range" id="cSlider" min="-1" max="1" step="0.01" value="0.5">
+          <div class="chips" id="cChips" style="margin-top:6px"></div>
+        </div>
+        <div class="readout">
+          <div class="big" id="cBig"></div>
+          <div class="sub" id="cSub"></div>
+          <p class="how" id="cHow"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="p-graphs" class="pane" hidden>
+    <div class="toggles" id="gToggles" style="margin-bottom:12px"></div>
+    <label class="tog" style="margin-bottom:12px"><input type="checkbox" id="gOrig"> <span style="font-family:var(--f-body)" data-i="gOrig"></span></label>
+    <div class="paper-grid" id="graphBox"><canvas id="graph"></canvas></div>
+    <p style="color:var(--muted);margin-top:12px;max-width:70ch" data-i="gHint"></p>
+  </div>
+
+  <div id="p-train" class="pane" hidden>
+    <div class="qwrap">
+      <div class="bar"><div class="seg" id="trCat"></div></div>
+      <div class="bar">
+        <span class="stat"><span data-i="sDone"></span>: <b id="sDone">0</b></span>
+        <span class="stat"><span data-i="sOk"></span>: <b id="sOk">0</b></span>
+        <span class="stat"><span data-i="sStreak"></span>: <b id="sStreak">0</b></span>
+        <span class="stat"><span data-i="sBest"></span>: <b id="sBest">0</b></span>
+      </div>
+      <div id="trBox"></div>
+    </div>
+  </div>
+
+  <div id="p-test" class="pane" hidden>
+    <div class="qwrap" id="testBox"></div>
+  </div>
+  </main>
+</div>
+
+<script>
+/* ---------- язык ---------- */
+let LANG='ru';
+try{ const s=localStorage.getItem('arc-lang'); if(s==='kz'||s==='ru') LANG=s; }catch(e){}
+const L=(ru,kz)=>LANG==='kz'?kz:ru;
+
+/* ---------- утилиты ---------- */
+const $ = s => document.querySelector(s);
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+let rnd = Math.random;
+const pick = a => a[Math.floor(rnd()*a.length)];
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const newSeed = () => Math.floor(Math.random()*2**31);
+function withSeed(seed,fn){ const p=rnd; rnd=mulberry(seed); try{ return fn(); } finally{ rnd=p; } }
+const gcd = (a,b) => { a=Math.abs(a); b=Math.abs(b); while(b){[a,b]=[b,a%b];} return a||1; };
+const norm = ([p,q]) => { if(q<0){p=-p;q=-q;} const g=gcd(p,q); return [p/g,q/g]; };
+const add = (a,b) => norm([a[0]*b[1]+b[0]*a[1], a[1]*b[1]]);
+const frac = (n,d) => `<span class="fr"><span>${n}</span><span>${d}</span></span>`;
+const strip = h => h.replace(/<[^>]+>/g,'|');
+function A(a){
+  const [p,q] = norm(a); if(p===0) return '0';
+  const s = p<0?'−':''; const P=Math.abs(p); const n=(P===1?'':P)+'π';
+  return q===1 ? s+n : s+frac(n,q);
+}
+const num = x => (x<0?'−':'')+Math.abs(x).toFixed(3).replace(/\.?0+$/,'').replace('.',',');
+
+/* ---------- данные ---------- */
+const V = {
+  '0':{h:'0',x:0}, '1/2':{h:frac('1','2'),x:.5}, 'r2/2':{h:frac('√2','2'),x:Math.SQRT2/2},
+  'r3/2':{h:frac('√3','2'),x:Math.sqrt(3)/2}, '1':{h:'1',x:1}, 'r3/3':{h:frac('√3','3'),x:Math.sqrt(3)/3}, 'r3':{h:'√3',x:Math.sqrt(3)},
+};
+const negV = v => ({h:'−'+v.h, x:-v.x});
+const R = { seg:`[${A([-1,2])}; ${A([1,2])}]`, segO:`(${A([-1,2])}; ${A([1,2])})`, zp:'[0; π]', zpO:'(0; π)' };
+const H2 = A([1,2]);
+const FN = {
+  asin:{name:'arcsin',trig:'sin',odd:true, range:R.seg, word:'Арксинус', base:{'0':[0,1],'1/2':[1,6],'r2/2':[1,4],'r3/2':[1,3],'1':[1,2]}, f:Math.asin},
+  acos:{name:'arccos',trig:'cos',odd:false,range:R.zp, word:'Арккосинус', base:{'0':[1,2],'1/2':[1,3],'r2/2':[1,4],'r3/2':[1,6],'1':[0,1]}, f:Math.acos},
+  atg: {name:'arctg', trig:'tg', odd:true, range:R.segO,word:'Арктангенс', base:{'0':[0,1],'r3/3':[1,6],'1':[1,4],'r3':[1,3]}, f:Math.atan},
+  actg:{name:'arcctg',trig:'ctg',odd:false,range:R.zpO, word:'Арккотангенс', base:{'0':[1,2],'r3/3':[1,3],'1':[1,4],'r3':[1,6]}, f:x=>Math.PI/2-Math.atan(x)},
+};
+const FKEYS=['asin','acos','atg','actg'];
+function angleOf(fk,k,neg){ const b=FN[fk].base[k]; if(!neg) return b; return norm(FN[fk].odd?[-b[0],b[1]]:[b[1]-b[0],b[1]]); }
+
+/* ---------- тексты интерфейса ---------- */
+const UI = () => ({
+  eyebrow: L('Алгебра · 10 класс','Алгебра және анализ бастамалары · 10-сынып · §6'),
+  h1: L('Арксинус, арккосинус, <em>арктангенс</em> и арккотангенс','Арксинус, арккосинус, <em>арктангенс</em>, арккотангенс'),
+  lead: L('Определения и свойства, живая единичная окружность, графики, тренажёр с разбором ошибок и итоговый тест из 10 заданий.',
+          'Анықтамалар мен қасиеттер, интерактивті бірлік шеңбер, графиктер, қателерді талдайтын жаттықтырғыш және 10 тапсырмадан тұратын қорытынды тест.'),
+  light: L('Светлая','Ашық'), dark: L('Тёмная','Қараңғы'),
+  tTheory: L('Теория','Теория'), tCircle: L('Окружность','Шеңбер'), tGraphs: L('Графики','Графиктер'), tTrain: L('Тренажёр','Жаттықтырғыш'), tTest: L('Тест','Тест'),
+  tblTitle: L('Таблица значений','Мәндер кестесі'),
+  propsTitle: L('Свойства и простейшие уравнения','Кері тригонометриялық функциялардың қасиеттері'),
+  propsFn: L('Свойства функций','Функциялардың қасиеттері'),
+  ident: L('Полезные тождества','Есте сақтаңдар: тепе-теңдіктер'),
+  eqTitle: L('Простейшие уравнения','Қарапайым тригонометриялық теңдеулер'),
+  eqNote: L(`Частные случаи: <span class="m">sin x = 0 ⇒ x = πn</span>, <span class="m">cos x = 0 ⇒ x = ${H2} + πn</span>. При |a| &gt; 1 уравнения sin x = a и cos x = a корней не имеют.`,
+            `Дербес жағдайлар: <span class="m">sin x = 0 ⇒ x = πn</span>, <span class="m">cos x = 0 ⇒ x = ${H2} + πn</span>. |a| &gt; 1 болғанда sin x = a және cos x = a теңдеулерінің түбірлері жоқ.`),
+  fn: L('Функция','Функция'), numA: L('Число a:','a саны:'),
+  gOrig: L('Показать исходную функцию на «главном» промежутке и прямую y = x','Бастапқы функцияны «негізгі» аралықта және y = x түзуін көрсету'),
+  gHint: L(`График обратной функции симметричен графику исходной относительно прямой <span class="m">y = x</span>. Поэтому синус берут только на отрезке <span class="m">${R.seg}</span>, где он монотонен, а косинус — на <span class="m">[0; π]</span>. Пунктиром показаны асимптоты арктангенса и арккотангенса.`,
+           `Кері функцияның графигі бастапқы функция графигіне <span class="m">y = x</span> түзуіне қатысты симметриялы. Сондықтан синусты тек монотонды болатын <span class="m">${R.seg}</span> кесіндісінде, ал косинусты <span class="m">[0; π]</span> кесіндісінде қарастырады. Пунктирмен арктангенс пен арккотангенстің асимптоталары көрсетілген.`),
+  sDone: L('Решено','Шешілді'), sOk: L('Верно','Дұрыс'), sStreak: L('Серия','Қатарынан'), sBest: L('Рекорд серии','Ең ұзақ қатар'),
+});
+function applyUI(){
+  const u=UI(); document.querySelectorAll('[data-i]').forEach(e=>{ const v=u[e.dataset.i]; if(v!==undefined) e.innerHTML=v; });
+  document.documentElement.lang = LANG==='kz'?'kk':'ru';
+  [...$('#langSw').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===LANG));
+}
+
+/* ---------- ТЕОРИЯ ---------- */
+function renderTheory(){
+  const DEF = {
+    asin:{cond:'[−1; 1]', rd:L('арксинус икс','арксинус икс'), def:L(`Арксинусом числа <i>a</i> (|a| ≤ 1) называется такое число α из отрезка ${R.seg}, синус которого равен <i>a</i>.`,`<i>a</i> (|a| ≤ 1) <i>санының арксинусы</i> деп синусы <i>a</i>-ға тең ${R.seg} аралығындағы санды айтады.`),
+      formula:`arcsin a = α ⇔ sin α = a,&nbsp; ${A([-1,2])} ≤ α ≤ ${H2}`, prop:'arcsin(−a) = −arcsin a', ex:`arcsin ${frac('√2','2')} = ${A([1,4])}`},
+    acos:{cond:'[−1; 1]', rd:L('арккосинус икс','арккосинус икс'), def:L(`Арккосинусом числа <i>a</i> (|a| ≤ 1) называется такое число α из отрезка [0; π], косинус которого равен <i>a</i>.`,`<i>a</i> (|a| ≤ 1) <i>санының арккосинусы</i> деп косинусы <i>a</i>-ға тең [0; π] аралығындағы санды айтады.`),
+      formula:'arccos a = α ⇔ cos α = a,&nbsp; 0 ≤ α ≤ π', prop:'arccos(−a) = π − arccos a', ex:`arccos(−${frac('1','2')}) = ${A([2,3])}`},
+    atg:{cond:L('ℝ (любое число)','R (барлық нақты сандар)'), rd:L('арктангенс икс','арктангенс икс'), def:L(`Арктангенсом числа <i>a</i> называется такое число α из интервала ${R.segO}, тангенс которого равен <i>a</i>.`,`<i>a санының арктангенсі</i> деп тангенсі <i>a</i>-ға тең ${R.segO} интервалындағы санды айтады.`),
+      formula:`arctg a = α ⇔ tg α = a,&nbsp; ${A([-1,2])} &lt; α &lt; ${H2}`, prop:'arctg(−a) = −arctg a', ex:`arctg √3 = ${A([1,3])}`},
+    actg:{cond:L('ℝ (любое число)','R (барлық нақты сандар)'), rd:L('арккотангенс икс','арккотангенс икс'), def:L(`Арккотангенсом числа <i>a</i> называется такое число α из интервала (0; π), котангенс которого равен <i>a</i>.`,`<i>a санының арккотангенсі</i> деп котангенсі <i>a</i>-ға тең (0; π) интервалындағы санды айтады.`),
+      formula:'arcctg a = α ⇔ ctg α = a,&nbsp; 0 &lt; α &lt; π', prop:'arcctg(−a) = π − arcctg a', ex:`arcctg(−1) = ${A([3,4])}`},
+  };
+  CARD_DEF=DEF;
+  const isUp=FKEYS.reduce((o,k)=>(o[k]=(k==='asin'||k==='atg'),o),{});
+  const oddT=L('нечётная','тақ'), nnT=L('ни чётная, ни нечётная','жұп та, тақ та емес');
+  const orig={asin:'sin',acos:'cos',atg:'tg',actg:'ctg'};
+  $('#defCards').innerHTML = `<p class="hint">${L('Нажмите на свойство — оно покажется на графике справа.','Қасиетті басыңыз — ол оң жақтағы графикте көрсетіледі.')}</p>` + FKEYS.map(k=>{const d=DEF[k],f=FN[k];
+    const rows=[
+      ['dom',L('Область определения','Анықталу облысы'),d.cond],
+      ['rng',L('Множество значений','Мәндер жиыны'),f.range],
+      ['par',L('Чётность','Жұп/тақтығы'),(f.odd?oddT:nnT)+':&nbsp; '+d.prop.replace(/\ba\b/g,'x')],
+      ['mono',L('Монотонность','Бірсарындылығы'),isUp[k]?L('возрастает','бірсарынды өспелі'):L('убывает','бірсарынды кемімелі')],
+      ['ex',L('Пример','Мысал'),d.ex],
+      ['inv',L('График','Графигі'),L(`симметричен графику y = ${orig[k]} x относительно y = x`,`y = x түзуіне қарағанда y = ${orig[k]} x графигіне симметриялы`)],
+    ];
+    return `
+    <article class="fcard" style="--fc:var(--c-${k})">
+      <div class="ftext">
+        <div class="head"><span class="sym" style="color:var(--c-${k})">y = ${f.name} x</span><span class="tag">${f.word} · «${d.rd}»</span></div>
+        <p class="def">${d.def}</p>
+        <div class="formula">${d.formula}</div>
+        <ul class="props">${rows.map(([m,l,v])=>`<li><button class="prop" data-fk="${k}" data-m="${m}" aria-pressed="${MM[k]===m}"><span class="pl">${l}</span><span class="pv m">${v}</span></button></li>`).join('')}</ul>
+      </div>
+      <figure class="fgraph">
+        <div class="paper-grid"><svg id="mini-${k}" role="img" aria-label="y = ${f.name} x"></svg></div>
+        <figcaption id="cap-${k}"></figcaption>
+      </figure>
+    </article>`}).join('');
+  FKEYS.forEach(drawMini);
+  const valueTable=(keys,fns)=>{
+    const cols=[]; [...keys].reverse().forEach(k=>{if(k!=='0')cols.push({k,neg:true});}); keys.forEach(k=>cols.push({k,neg:false}));
+    let h='<thead><tr><th>a</th>'+cols.map(c=>`<th>${c.neg?negV(V[c.k]).h:V[c.k].h}</th>`).join('')+'</tr></thead><tbody>';
+    fns.forEach(fk=>{h+=`<tr><td style="color:var(--c-${fk})">${FN[fk].name} a</td>`+cols.map(c=>`<td>${A(angleOf(fk,c.k,c.neg))}</td>`).join('')+'</tr>';});
+    return h+'</tbody>';
+  };
+  $('#tblSC').innerHTML=valueTable(['0','1/2','r2/2','r3/2','1'],['asin','acos']);
+  $('#tblTC').innerHTML=valueTable(['0','r3/3','1','r3'],['atg','actg']);
+  const up=L('возрастает','бірсарынды өспелі'), dn=L('убывает','бірсарынды кемімелі'), od=L('нечётная','тақ'), nn=L('ни чётная, ни нечётная','жұп та, тақ та емес');
+  $('#tblProps').innerHTML=`<thead><tr><th>y</th><th>D(y)</th><th>E(y)</th><th>${L('Монотонность','Бірсарындылығы')}</th><th>${L('Чётность','Жұп/тақтығы')}</th></tr></thead><tbody>
+    <tr><td>arcsin x</td><td>[−1; 1]</td><td>${R.seg}</td><td>${up}</td><td>${od}</td></tr>
+    <tr><td>arccos x</td><td>[−1; 1]</td><td>[0; π]</td><td>${dn}</td><td>${nn}</td></tr>
+    <tr><td>arctg x</td><td>ℝ</td><td>${R.segO}</td><td>${up}</td><td>${od}</td></tr>
+    <tr><td>arcctg x</td><td>ℝ</td><td>(0; π)</td><td>${dn}</td><td>${nn}</td></tr></tbody>`;
+  $('#identities').innerHTML=[
+    'sin(arcsin a) = a,&nbsp; |a| ≤ 1','cos(arccos a) = a,&nbsp; |a| ≤ 1',
+    `arcsin a + arccos a = ${H2}`,`arctg a + arcctg a = ${H2}`,
+    'cos(arcsin a) = √(1 − a²)','sin(arccos a) = √(1 − a²)',
+    L(`arcsin(sin x) = x,&nbsp; только при x ∈ ${R.seg}`,`arcsin(sin x) = x,&nbsp; тек x ∈ ${R.seg} болғанда`)
+  ].map(s=>`<li>${s}</li>`).join('');
+  $('#eqs').innerHTML=['sin x = a ⇒ x = (−1)ⁿ arcsin a + πn','cos x = a ⇒ x = ±arccos a + 2πn','tg x = a ⇒ x = arctg a + πn','ctg x = a ⇒ x = arcctg a + πn','n ∈ ℤ'].map(s=>`<li>${s}</li>`).join('');
+}
+
+
+/* ---------- графики в теории ---------- */
+let CARD_DEF=null;
+const MM={asin:null,acos:null,atg:null,actg:null};
+const MINI={asin:{x:[-2.2,2.2],y:[-2,2],u:100},acos:{x:[-2.2,2.2],y:[-.8,3.6],u:100},atg:{x:[-4.5,4.5],y:[-2.4,2.4],u:50},actg:{x:[-4.5,4.5],y:[-1,4],u:50}};
+const EXP={asin:[Math.SQRT2/2,Math.PI/4,'√2/2','π/4'],acos:[-.5,2*Math.PI/3,'−1/2','2π/3'],atg:[Math.sqrt(3),Math.PI/3,'√3','π/3'],actg:[-1,3*Math.PI/4,'−1','3π/4']};
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.prop'); if(!b) return;
+  const k=b.dataset.fk, m=b.dataset.m; MM[k]=MM[k]===m?null:m;
+  b.closest('.props').querySelectorAll('.prop').forEach(x=>x.setAttribute('aria-pressed',x.dataset.m===MM[k]));
+  drawMini(k);
+});
+function drawMini(fk){
+  const svg=$('#mini-'+fk); if(!svg) return; svg.innerHTML='';
+  const M=MINI[fk], W=(M.x[1]-M.x[0])*M.u, H=(M.y[1]-M.y[0])*M.u, FS=21;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const X=x=>(x-M.x[0])*M.u, Y=y=>(M.y[1]-y)*M.u, col=`var(--c-${fk})`, f=FN[fk].f, mode=MM[fk];
+  const P=Math.PI, H2_=P/2;
+  const line=(x1,y1,x2,y2,a)=>el('line',Object.assign({x1:X(x1),y1:Y(y1),x2:X(x2),y2:Y(y2)},a),svg);
+  const dash=(x1,y1,x2,y2,c)=>line(x1,y1,x2,y2,{stroke:c||col,'stroke-width':2,'stroke-dasharray':'7 6'});
+  const dot=(x,y,open,c)=>el('circle',{cx:X(x),cy:Y(y),r:7,fill:open?'var(--surface)':(c||col),stroke:c||col,'stroke-width':2.5},svg);
+  const t=(s,x,y,a)=>{const e=el('text',Object.assign({x,y,'font-size':FS,fill:'var(--muted)','font-family':'PT Serif, Georgia, serif','paint-order':'stroke',stroke:'var(--surface)','stroke-width':5,'stroke-linejoin':'round'},a||{}),svg);e.textContent=s;return e;};
+  const path=(fn,a,b,attrs)=>{let d='',st=false;for(let i=0;i<=240;i++){const x=a+(b-a)*i/240,y=fn(x);if(!isFinite(y)||y>M.y[1]+1||y<M.y[0]-1){st=false;continue;}d+=(st?'L':'M')+X(x).toFixed(1)+' '+Y(y).toFixed(1);st=true;}return el('path',Object.assign({d,fill:'none'},attrs),svg);};
+  // сетка
+  for(let i=Math.ceil(M.x[0]);i<=M.x[1];i++) line(i,M.y[0],i,M.y[1],{stroke:'var(--line)','stroke-width':1});
+  for(let i=Math.ceil(M.y[0]);i<=M.y[1];i++) line(M.x[0],i,M.x[1],i,{stroke:'var(--line)','stroke-width':1});
+  // оси
+  const defs=el('defs',{},svg), mk=el('marker',{id:'ma-'+fk,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:8,markerHeight:8,orient:'auto-start-reverse'},defs);
+  el('path',{d:'M0 0L10 5L0 10z',fill:'var(--muted)'},mk);
+  line(M.x[0],0,M.x[1]-.02,0,{stroke:'var(--muted)','stroke-width':2,'marker-end':`url(#ma-${fk})`});
+  line(0,M.y[0],0,M.y[1]-.02,{stroke:'var(--muted)','stroke-width':2,'marker-end':`url(#ma-${fk})`});
+  t('x',W-18,Y(0)-10,{'font-style':'italic'}); t('y',X(0)+10,22,{'font-style':'italic'}); t('O',X(0)-22,Y(0)+24);
+  const PX0={asin:.8,acos:.6,atg:1.6,actg:1.5}[fk], EXX=EXP[fk][0];
+  for(let i=Math.ceil(M.x[0]);i<=M.x[1]-.3;i++){ if(!i) continue; if(mode==='par'&&Math.min(Math.abs(i-PX0),Math.abs(i+PX0))*M.u<34) continue; if(mode==='ex'&&Math.abs(i-EXX)*M.u<34) continue; t((i<0?'−':'')+Math.abs(i),X(i),Y(0)+26,{'text-anchor':'middle'}); }
+  [[-H2_,'−π/2'],[H2_,'π/2'],[P,'π']].forEach(([y,l])=>{ if(y<M.y[0]||y>M.y[1]) return; line(M.x[0],y,M.x[1],y,{stroke:'var(--muted)','stroke-width':1,'stroke-dasharray':'3 5'}); t(l,X(0)+8,Y(y)-7); });
+  // асимптоты
+  if(fk==='atg'){ dash(M.x[0],H2_,M.x[1],H2_); dash(M.x[0],-H2_,M.x[1],-H2_); }
+  if(fk==='actg'){ dash(M.x[0],P,M.x[1],P); }
+  const D=(fk==='asin'||fk==='acos')?[-1,1]:[M.x[0],M.x[1]];
+  const E={asin:[-H2_,H2_],acos:[0,P],atg:[-H2_,H2_],actg:[0,P]}[fk], closed=fk==='asin'||fk==='acos';
+  // режимы — подложки
+  if(mode==='dom'){
+    el('rect',{x:X(D[0]),y:Y(0)-8,width:X(D[1])-X(D[0]),height:16,rx:8,fill:col,'fill-opacity':.35},svg);
+    if(closed){ dash(-1,0,-1,f(-1)); dash(1,0,1,f(1)); dot(-1,0); dot(1,0); }
+  }
+  if(mode==='rng'){
+    el('rect',{x:X(0)-8,y:Y(E[1]),width:16,height:Y(E[0])-Y(E[1]),rx:8,fill:col,'fill-opacity':.35},svg);
+    el('rect',{x:0,y:Y(E[1]),width:W,height:Y(E[0])-Y(E[1]),fill:col,'fill-opacity':.07},svg);
+    if(fk==='asin'){ dash(0,H2_,1,H2_); dash(0,-H2_,-1,-H2_); }
+    if(fk==='acos'){ dash(0,P,-1,P); }
+    dot(0,E[0],!closed); dot(0,E[1],!closed);
+  }
+  if(mode==='inv'){
+    line(M.x[0],M.x[0],M.x[1],M.x[1],{stroke:'var(--muted)','stroke-width':2,'stroke-dasharray':'10 7'});
+    const O={asin:[Math.sin,-H2_,H2_],acos:[Math.cos,0,P],atg:[Math.tan,-H2_+.01,H2_-.01],actg:[x=>1/Math.tan(x),.01,P-.01]}[fk];
+    path(O[0],O[1],O[2],{stroke:col,'stroke-width':3,'stroke-dasharray':'4 6','stroke-opacity':.75});
+    const nm={asin:'y = sin x',acos:'y = cos x',atg:'y = tg x',actg:'y = ctg x'}[fk];
+    const lp={asin:[1.2,.75],acos:[1.75,-.5],atg:[.45,-.8],actg:[2.6,-.6]}[fk];
+    t(nm,X(lp[0]),Y(lp[1]),{fill:col,'font-style':'italic'});
+    const yl={asin:[1.55,1.85],acos:[2.35,2.1],atg:[2.05,2.1],actg:[3.2,3.3]}[fk];
+    t('y = x',X(yl[0]),Y(yl[1]),{'font-style':'italic','text-anchor':fk==='atg'?'start':'end'});
+  }
+  // кривая
+  path(f,D[0]+(closed?0:.0),D[1],{stroke:col,'stroke-width':mode==='mono'?7:4.5,'stroke-linecap':'round'});
+  if(closed){ dot(-1,f(-1)); dot(1,f(1)); }
+  const nl={asin:[M.x[0]+.12,M.y[1]-.3,'start'],acos:[M.x[1]-.12,M.y[1]-.35,'end'],atg:[M.x[0]+.15,M.y[1]-.3,'start'],actg:[M.x[1]-.15,M.y[1]-.4,'end']}[fk];
+  t('y = '+FN[fk].name+' x',X(nl[0]),Y(nl[1]),{fill:col,'font-style':'italic','font-size':FS+3,'text-anchor':nl[2],'font-weight':'bold'});
+  // режимы — поверх
+  if(mode==='par'){
+    const x0=PX0;
+    const p1=[x0,f(x0)], p2=[-x0,f(-x0)];
+    dash(p1[0],0,p1[0],p1[1]); dash(p2[0],0,p2[0],p2[1]);
+    if(FN[fk].odd){ dash(p1[0],p1[1],p2[0],p2[1],'var(--ink)'); dot(0,0,false,'var(--ink)'); }
+    else { dash(M.x[0],H2_,M.x[1],H2_,'var(--muted)'); dash(p1[0],p1[1],p2[0],p2[1],'var(--ink)'); dot(0,H2_,false,'var(--ink)'); }
+    dot(p1[0],p1[1]); dot(p2[0],p2[1]);
+    t('x',X(x0),Y(0)+(FN[fk].odd?-12:26),{'text-anchor':'middle','font-style':'italic',fill:'var(--ink)','font-weight':'bold'});
+    t('−x',X(-x0),Y(0)+(FN[fk].odd?-12:26),{'text-anchor':'middle','font-style':'italic',fill:'var(--ink)','font-weight':'bold'});
+  }
+  if(mode==='mono'){
+    const xs=closed?[-.55,.55]:[-2.4,0,2.4];
+    xs.forEach(x=>{ const x1=X(x),y1=Y(f(x)),x2=X(x+.01),y2=Y(f(x+.01)); const a=Math.atan2(y2-y1,x2-x1);
+      const L_=22,Wd=12, pts=[[x1+Math.cos(a)*L_,y1+Math.sin(a)*L_],[x1+Math.cos(a+Math.PI/2)*Wd,y1+Math.sin(a+Math.PI/2)*Wd],[x1-Math.cos(a+Math.PI/2)*Wd,y1-Math.sin(a+Math.PI/2)*Wd]];
+      el('polygon',{points:pts.map(p=>p.join(',')).join(' '),fill:'var(--ink)'},svg); });
+  }
+  if(mode==='ex'){
+    const [ex,ey,lx,ly]=EXP[fk];
+    dash(ex,0,ex,ey); dash(0,ey,ex,ey); dot(ex,ey);
+    t(lx,X(ex),Y(0)+(ey>0?26:-12),{'text-anchor':'middle',fill:'var(--ink)','font-weight':'bold'});
+    t(ly,ex<0?X(0)+8:X(0)-8,Y(ey)-8,{'text-anchor':ex<0?'start':'end',fill:'var(--ink)','font-weight':'bold'});
+  }
+  // подпись
+  const d=CARD_DEF[fk], fnm=FN[fk].name;
+  const caps={
+    null:L('Выберите свойство слева — оно покажется на графике.','Сол жақтағы қасиетті таңдаңыз — ол графикте көрсетіледі.'),
+    dom: closed?L(`D(y) = [−1; 1]: график существует только над отрезком [−1; 1] оси Ox.`,`D(y) = [−1; 1]: график тек Ox осінің [−1; 1] кесіндісінің үстінде бар.`)
+               :L('D(y) = ℝ: график продолжается вдоль всей оси Ox.','D(y) = R: график бүкіл Ox осі бойымен созылады.'),
+    rng: L(`E(y) = ${FN[fk].range}: весь график лежит в этой горизонтальной полосе.`,`E(y) = ${FN[fk].range}: график толығымен осы көлденең жолақта жатады.`)+(closed?'':L(' Пунктирные прямые — асимптоты, их значения не достигаются.',' Пунктир түзулер — асимптоталар, бұл мәндерге функция жетпейді.')),
+    par: FN[fk].odd?L(`${d.prop.replace(/\ba\b/g,'x')}: точки графика симметричны относительно начала координат O.`,`${d.prop.replace(/\ba\b/g,'x')}: график нүктелері O координаталар басына қатысты симметриялы.`)
+                   :L(`${d.prop.replace(/\ba\b/g,'x')}: точки графика симметричны относительно точки (0; ${H2}), а не начала координат.`,`${d.prop.replace(/\ba\b/g,'x')}: график нүктелері O нүктесіне емес, (0; ${H2}) нүктесіне қатысты симметриялы.`),
+    mono: (fk==='asin'||fk==='atg')?L('Функция возрастает: при движении слева направо график поднимается.','Функция бірсарынды өспелі: солдан оңға қарай график жоғары көтеріледі.')
+                                   :L('Функция убывает: при движении слева направо график опускается.','Функция бірсарынды кемімелі: солдан оңға қарай график төмен түседі.'),
+    ex: `${d.ex}: ${L('точка','нүкте')} (${EXP[fk][2]}; ${EXP[fk][3]}) ${L('лежит на графике.','графикте жатыр.')}`,
+    inv: L(`Графики y = ${fnm} x и y = ${({asin:'sin',acos:'cos',atg:'tg',actg:'ctg'})[fk]} x симметричны относительно прямой y = x.`,`y = ${fnm} x және y = ${({asin:'sin',acos:'cos',atg:'tg',actg:'ctg'})[fk]} x графиктері y = x түзуіне қарағанда симметриялы.`)
+  };
+  $('#cap-'+fk).innerHTML=caps[mode];
+}
+
+/* ---------- вкладки ---------- */
+const TABS=['theory','circle','graphs','train','test'];
+function showTab(t){
+  TABS.forEach(x=>{ $('#p-'+x).hidden=x!==t; $('#t-'+x).setAttribute('aria-selected',x===t); });
+  if(t==='graphs') drawGraph();
+  try{ localStorage.setItem('arc-tab',t); }catch(e){}
+}
+document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+
+/* ---------- ОКРУЖНОСТЬ ---------- */
+const NS='http://www.w3.org/2000/svg';
+const C={fk:'asin',a:.5};
+const CX=210,CY=220,RR=100;
+const S=(x,y)=>[CX+x*RR,CY-y*RR];
+const CHIPS={sc:[['1',1],['r3/2',1],['r2/2',1],['1/2',1],['0',0],['1/2',0],['r2/2',0],['r3/2',0],['1',0]], tc:[['r3',1],['1',1],['r3/3',1],['0',0],['r3/3',0],['1',0],['r3',0]]};
+$('#cFn').innerHTML=FKEYS.map(k=>`<button data-fk="${k}" aria-pressed="${k===C.fk}">${FN[k].name}</button>`).join('');
+$('#cFn').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  C.fk=b.dataset.fk; [...$('#cFn').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
+  const sc=C.fk==='asin'||C.fk==='acos'; const sl=$('#cSlider'); sl.min=sc?-1:-2.5; sl.max=sc?1:2.5;
+  if(Math.abs(C.a)>(sc?1:2.5)) C.a=.5; sl.value=C.a; buildChips(); drawCircle();
+});
+$('#cSlider').addEventListener('input',e=>{C.a=parseFloat(e.target.value);drawCircle();});
+function buildChips(){
+  const list=(C.fk==='asin'||C.fk==='acos')?CHIPS.sc:CHIPS.tc;
+  $('#cChips').innerHTML=list.map(([k,n])=>{const v=n?negV(V[k]):V[k];return `<button class="chip" data-k="${k}" data-n="${n}">${v.h}</button>`}).join('');
+}
+$('#cChips').addEventListener('click',e=>{const b=e.target.closest('.chip'); if(!b) return; const v=V[b.dataset.k]; C.a=b.dataset.n==='1'?-v.x:v.x; $('#cSlider').value=C.a; drawCircle();});
+function exactOf(fk,a){ for(const k of Object.keys(FN[fk].base)){ if(Math.abs(V[k].x-Math.abs(a))<1e-9) return {k,neg:a<0&&k!=='0'}; } return null; }
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent.appendChild(e);return e;}
+function arcPath(r,a0,a1){ if(a1<a0)[a0,a1]=[a1,a0]; const x0=CX+r*Math.cos(a0),y0=CY-r*Math.sin(a0),x1=CX+r*Math.cos(a1),y1=CY-r*Math.sin(a1); return `M${x0} ${y0} A${r} ${r} 0 ${a1-a0>Math.PI?1:0} 0 ${x1} ${y1}`; }
+function txt(s,x,y,attrs,p){const t=el('text',Object.assign({x,y,'font-size':18,fill:'var(--muted)','font-family':'PT Serif, Georgia, serif'},attrs||{}),p);t.textContent=s;return t;}
+function drawCircle(){
+  const svg=$('#circle'); svg.innerHTML='';
+  const fk=C.fk,a=C.a,col=`var(--c-${fk})`,f=FN[fk],th=f.f(a);
+  const defs=el('defs',{},svg); const mk=el('marker',{id:'ar',viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse'},defs);
+  el('path',{d:'M0 0L10 5L0 10z',fill:'var(--muted)'},mk);
+  el('line',{x1:10,y1:CY,x2:410,y2:CY,stroke:'var(--muted)','stroke-width':1.2,'marker-end':'url(#ar)'},svg);
+  el('line',{x1:CX,y1:430,x2:CX,y2:12,stroke:'var(--muted)','stroke-width':1.2,'marker-end':'url(#ar)'},svg);
+  txt('x',400,CY+18,{},svg); txt('y',CX+8,22,{},svg);
+  txt('1',CX+RR+4,CY+20,{},svg); txt('−1',CX-RR-26,CY+20,{},svg); txt('1',CX-16,CY-RR-4,{},svg); txt('−1',CX-30,CY+RR+18,{},svg); txt('0',CX-16,CY+20,{},svg);
+  el('circle',{cx:CX,cy:CY,r:RR,fill:'none',stroke:'var(--ink)','stroke-width':1.5},svg);
+  const rng={asin:[-Math.PI/2,Math.PI/2],acos:[0,Math.PI],atg:[-Math.PI/2,Math.PI/2],actg:[0,Math.PI]}[fk];
+  el('path',{d:arcPath(RR,rng[0],rng[1]),fill:'none',stroke:col,'stroke-width':9,'stroke-opacity':.22},svg);
+  const open=fk==='atg'||fk==='actg';
+  rng.forEach(t=>{const [x,y]=S(Math.cos(t),Math.sin(t)); el('circle',{cx:x,cy:y,r:5,fill:open?'var(--surface)':col,stroke:col,'stroke-width':2},svg);});
+  const P=[Math.cos(th),Math.sin(th)]; let other;
+  if(fk==='asin'){
+    const [x1,y]=S(-1.3,a),[x2]=S(1.3,a);
+    el('line',{x1,y1:y,x2,y2:y,stroke:col,'stroke-dasharray':'5 4','stroke-width':1.3},svg);
+    el('line',{x1:CX-5,y1:y,x2:CX+5,y2:y,stroke:col,'stroke-width':2},svg);
+    txt('a',CX-20,y-6,{fill:col,'font-style':'italic'},svg); other=[-P[0],P[1]];
+  } else if(fk==='acos'){
+    const [x,y1]=S(a,1.3),[,y2]=S(a,-1.3);
+    el('line',{x1:x,y1,x2:x,y2,stroke:col,'stroke-dasharray':'5 4','stroke-width':1.3},svg);
+    el('line',{x1:x,y1:CY-5,x2:x,y2:CY+5,stroke:col,'stroke-width':2},svg);
+    txt('a',x+5,CY+20,{fill:col,'font-style':'italic'},svg); other=[P[0],-P[1]];
+  } else if(fk==='atg'){
+    const [tx]=S(1,0);
+    el('line',{x1:tx,y1:10,x2:tx,y2:430,stroke:'var(--muted)','stroke-width':1},svg);
+    txt(L('линия тангенсов','тангенстер сызығы'),tx+6,26,{'font-size':15},svg);
+    const [px,py]=S(1,a),[qx,qy]=S(-1.1*Math.cos(th),-1.1*Math.sin(th));
+    el('line',{x1:qx,y1:qy,x2:px,y2:py,stroke:col,'stroke-dasharray':'5 4','stroke-width':1.3},svg);
+    el('circle',{cx:px,cy:py,r:4,fill:col},svg); txt('a',px+8,py+4,{fill:col,'font-style':'italic'},svg); other=[-P[0],-P[1]];
+  } else {
+    const [,ty]=S(0,1);
+    el('line',{x1:10,y1:ty,x2:410,y2:ty,stroke:'var(--muted)','stroke-width':1},svg);
+    txt(L('линия котангенсов','котангенстер сызығы'),16,ty-6,{'font-size':15},svg);
+    const [px,py]=S(a,1),[qx,qy]=S(-1.1*Math.cos(th),-1.1*Math.sin(th));
+    el('line',{x1:qx,y1:qy,x2:px,y2:py,stroke:col,'stroke-dasharray':'5 4','stroke-width':1.3},svg);
+    el('circle',{cx:px,cy:py,r:4,fill:col},svg); txt('a',px-4,py-9,{fill:col,'font-style':'italic'},svg); other=[-P[0],-P[1]];
+  }
+  if(Math.abs(other[0]-P[0])>1e-6||Math.abs(other[1]-P[1])>1e-6){const [ox,oy]=S(...other); el('circle',{cx:ox,cy:oy,r:5,fill:'var(--surface)',stroke:'var(--muted)','stroke-width':1.5,'stroke-dasharray':'2 2'},svg);}
+  if(Math.abs(th)>1e-6) el('path',{d:arcPath(30,0,th),fill:'none',stroke:col,'stroke-width':2},svg);
+  const [Px,Py]=S(...P);
+  el('line',{x1:CX,y1:CY,x2:Px,y2:Py,stroke:col,'stroke-width':2.2},svg);
+  el('circle',{cx:Px,cy:Py,r:6,fill:col},svg);
+  const lab=S(.48*Math.cos(th/2),.48*Math.sin(th/2)); txt('α',lab[0]-4,lab[1]+5,{fill:col,'font-size':24,'font-style':'italic'},svg);
+
+  const ex=exactOf(fk,a); const aH=ex?(ex.neg?negV(V[ex.k]).h:V[ex.k].h):num(a);
+  $('#cAval').innerHTML=aH;
+  [...$('#cChips').children].forEach(b=>{const v=V[b.dataset.k]; const x=b.dataset.n==='1'?-v.x:v.x; b.classList.toggle('on',Math.abs(x-a)<1e-9);});
+  const w=aH.startsWith('−')?`${f.name}(${aH})`:`${f.name} ${aH}`;
+  $('#cBig').innerHTML=`<span style="color:${col}">${w}</span> = ${ex?A(angleOf(fk,ex.k,ex.neg))+' ≈ '+num(th):'≈ '+num(th)}`;
+  const deg=th*180/Math.PI;
+  $('#cSub').textContent=`α ≈ ${num(th)} ${L('рад','рад')} ≈ ${(Math.round(deg*10)/10).toString().replace('.',',')}°`;
+  const HOW={
+    asin:L(`Проводим прямую y = a. Из двух точек пересечения с окружностью берём ту, что на <b>правой</b> полуокружности (угол из ${R.seg}). Пунктирная точка слева тоже имеет синус a, но в ответ не идёт.`,
+           `y = a түзуін жүргіземіз. Шеңбермен қиылысатын екі нүктенің ішінен <b>оң жақ</b> жарты шеңбердегісін аламыз (бұрыш ${R.seg} кесіндісінен). Сол жақтағы пунктир нүктенің де синусы a-ға тең, бірақ ол жауапқа кірмейді.`),
+    acos:L(`Проводим прямую x = a. Из двух точек пересечения берём ту, что на <b>верхней</b> полуокружности (угол из [0; π]).`,
+           `x = a түзуін жүргіземіз. Екі қиылысу нүктесінің ішінен <b>жоғарғы</b> жарты шеңбердегісін аламыз (бұрыш [0; π] кесіндісінен).`),
+    atg:L(`Откладываем a на линии тангенсов x = 1 и соединяем с началом координат. Нужна точка на <b>правой</b> полуокружности, концы ±${H2} не входят.`,
+          `a санын тангенстер сызығында (x = 1) белгілеп, координаталар басымен қосамыз. <b>Оң жақ</b> жарты шеңбердегі нүкте керек, ±${H2} ұштары кірмейді.`),
+    actg:L(`Откладываем a на линии котангенсов y = 1 и соединяем с началом координат. Нужна точка на <b>верхней</b> полуокружности, концы 0 и π не входят.`,
+           `a санын котангенстер сызығында (y = 1) белгілеп, координаталар басымен қосамыз. <b>Жоғарғы</b> жарты шеңбердегі нүкте керек, 0 және π ұштары кірмейді.`)
+  };
+  $('#cHow').innerHTML=HOW[fk];
+}
+
+/* ---------- ГРАФИКИ ---------- */
+const G={on:{asin:true,acos:true,atg:false,actg:false}};
+$('#gToggles').innerHTML=FKEYS.map(k=>`<label class="tog"><input type="checkbox" id="g-${k}" data-fk="${k}" ${G.on[k]?'checked':''}><span class="legend-dot" style="background:var(--c-${k})"></span>y = ${FN[k].name} x</label>`).join('');
+$('#gToggles').addEventListener('change',e=>{G.on[e.target.dataset.fk]=e.target.checked;drawGraph();});
+$('#gOrig').addEventListener('change',drawGraph);
+function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function drawGraph(){
+  const cv=$('#graph'),box=$('#graphBox'); const w=box.clientWidth; if(!w) return;
+  const F=parseFloat(getComputedStyle(document.documentElement).fontSize)/16; const s=Math.min(70*F,w/9.2),YT=3.7,YB=2.3,h=Math.round((YT+YB)*s);
+  const dpr=window.devicePixelRatio||1; cv.width=w*dpr; cv.height=h*dpr; cv.style.height=h+'px';
+  const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h);
+  const ox=w/2,oy=YT*s,X=x=>ox+x*s,Y=y=>oy-y*s,xr=w/2/s;
+  const muted=cssv('--muted'),line=cssv('--line');
+  g.font=Math.round(13*F)+'px "PT Serif", Georgia, serif';
+  g.strokeStyle=line; g.lineWidth=1;
+  for(let i=Math.ceil(-xr);i<=xr;i++){ if(!i) continue; g.beginPath(); g.moveTo(X(i),Y(-.08)); g.lineTo(X(i),Y(.08)); g.stroke(); g.fillStyle=muted; g.fillText((i<0?'−':'')+Math.abs(i),X(i)-(i<0?8:4)*F,Y(0)+16*F); }
+  [[-1,2,'−π/2'],[1,2,'π/2'],[1,1,'π']].forEach(([p,q,l])=>{const y=Math.PI*p/q;
+    g.setLineDash([3,4]); g.strokeStyle=line; g.beginPath(); g.moveTo(0,Y(y)); g.lineTo(w,Y(y)); g.stroke(); g.setLineDash([]);
+    g.fillStyle=muted; g.fillText(l,X(0)+6*F,Y(y)-5*F);});
+  g.strokeStyle=muted; g.lineWidth=1.2;
+  g.beginPath(); g.moveTo(0,Y(0)); g.lineTo(w,Y(0)); g.moveTo(X(0),0); g.lineTo(X(0),h); g.stroke();
+  g.fillStyle=muted; g.fillText('x',w-14*F,Y(0)-6*F); g.fillText('y',X(0)+6*F,16*F); g.fillText('0',X(0)-12*F,Y(0)+16*F);
+  const plot=(fn,a,b,col,dash,width)=>{g.strokeStyle=col;g.lineWidth=(width||2.6)*Math.max(1,F*.8);g.setLineDash(dash||[]);g.beginPath();let st=false;const n=400;
+    for(let i=0;i<=n;i++){const x=a+(b-a)*i/n,y=fn(x); if(!isFinite(y)||y>YT+1||y<-YB-1){st=false;continue;} if(!st){g.moveTo(X(x),Y(y));st=true;} else g.lineTo(X(x),Y(y));}
+    g.stroke(); g.setLineDash([]);};
+  const dot=(x,y,col)=>{g.beginPath();g.arc(X(x),Y(y),4*F,0,7);g.fillStyle=col;g.fill();};
+  const orig=$('#gOrig').checked;
+  if(orig) plot(x=>x,-xr,xr,muted,[6,5],1.2);
+  const E=1e-3,H=Math.PI/2;
+  const D={asin:[-1,1],acos:[-1,1],atg:[-xr,xr],actg:[-xr,xr]};
+  const O={asin:[Math.sin,-H,H],acos:[Math.cos,0,Math.PI],atg:[Math.tan,-H+E,H-E],actg:[x=>1/Math.tan(x),E,Math.PI-E]};
+  FKEYS.forEach(k=>{ if(!G.on[k]) return; const col=cssv('--c-'+k);
+    if(k==='atg'||k==='actg'){ const ys=k==='atg'?[-H,H]:[Math.PI]; g.setLineDash([7,5]); g.strokeStyle=col; g.globalAlpha=.55; g.lineWidth=1.2;
+      ys.forEach(y=>{g.beginPath();g.moveTo(0,Y(y));g.lineTo(w,Y(y));g.stroke();}); g.globalAlpha=1; g.setLineDash([]); }
+    if(orig){ const [fn,a,b]=O[k]; g.globalAlpha=.6; plot(fn,a,b,col,[2,4],2); g.globalAlpha=1; }
+    plot(FN[k].f,D[k][0],D[k][1],col);
+    if(k==='asin'){dot(-1,-H,col);dot(1,H,col);} if(k==='acos'){dot(-1,Math.PI,col);dot(1,0,col);}
+    g.fillStyle=col; g.font='italic '+Math.round(15*F)+'px "PT Serif", Georgia, serif';
+    const lbl={asin:[1.12,H-.05],acos:[-1.9,Math.PI-.25],atg:[xr-1.9,Math.atan(xr-1.9)-.32],actg:[-xr+.2,FN.actg.f(-xr+.2)+.2]}[k];
+    g.fillText('y = '+FN[k].name+' x',X(lbl[0]),Y(lbl[1])); g.font=Math.round(13*F)+'px "PT Serif", Georgia, serif';
+  });
+}
+new ResizeObserver(()=>{ if(!$('#p-graphs').hidden) drawGraph(); }).observe($('#graphBox'));
+
+/* ---------- БАНК ЗАДАНИЙ ---------- */
+const POOL=[[0,1],[1,6],[1,4],[1,3],[1,2],[2,3],[3,4],[5,6],[1,1],[-1,6],[-1,4],[-1,3],[-1,2]];
+const CATN = () => ({val:L('Значения','Мәндер'),sum:L('Выражения','Өрнектер'),prop:L('Свойства','Қасиеттер'),eq:L('Уравнения','Теңдеулер')});
+function mkQ(cat,q,correct,wrongs,ex){
+  const seen=new Set([strip(correct)]); const w=[];
+  for(const x of wrongs){const t=strip(x); if(!seen.has(t)){seen.add(t);w.push(x);} if(w.length===3) break;}
+  const opts=shuffle([correct,...w]); return {cat:CATN()[cat],q,opts,ans:opts.indexOf(correct),ex};
+}
+const wrapArg=vh=>vh.startsWith('−')||vh.includes('fr')?`(${vh})`:' '+vh;
+function term(fk,k,neg){const v=neg?negV(V[k]):V[k]; return `${FN[fk].name}${wrapArg(v.h)}`;}
+const CALC=()=>L('Вычислите:','Есептеңдер:');
+
+function gValue(){
+  const fk=pick(FKEYS),f=FN[fk],k=pick(Object.keys(f.base)),neg=k!=='0'&&rnd()<.5;
+  const v=neg?negV(V[k]):V[k],ans=angleOf(fk,k,neg),b=f.base[k];
+  const cands=[];
+  if(neg){cands.push(f.odd?norm([b[1]-b[0],b[1]]):norm([-b[0],b[1]])); cands.push(b);} else cands.push(norm([-b[0],b[1]]));
+  const other={asin:'acos',acos:'asin',atg:'actg',actg:'atg'}[fk]; cands.push(angleOf(other,k,neg));
+  const wr=[...cands,...shuffle(POOL)].filter(x=>A(x)!==A(ans)).map(A);
+  let ex;
+  if(!neg) ex=`${term(fk,k,false)} = ${A(ans)}, ${L('так как','өйткені')} ${A(ans)} ∈ ${f.range} ${L('и','және')} ${f.trig} ${A(ans)} = ${v.h}.`;
+  else if(f.odd) ex=`${f.name}(−a) = −${f.name} a, ${L('поэтому','сондықтан')} ${term(fk,k,true)} = −${f.name}${wrapArg(V[k].h)} = −${A(b)}.`;
+  else ex=`${f.name}(−a) = π − ${f.name} a, ${L('поэтому','сондықтан')} ${term(fk,k,true)} = π − ${A(b)} = ${A(ans)}.`;
+  return mkQ('val',`${CALC()} <span class="m">${term(fk,k,neg)}</span>`,A(ans),wr,ex);
+}
+function rndTerm(){const fk=pick(FKEYS),k=pick(Object.keys(FN[fk].base)),neg=k!=='0'&&rnd()<.45; return {fk,k,neg,ang:angleOf(fk,k,neg)};}
+function gSum(){
+  const t1=rndTerm(); let t2=rndTerm(); while(t2.fk===t1.fk&&t2.k===t1.k) t2=rndTerm();
+  const minus=rnd()<.35;
+  const res=add(t1.ang,minus?norm([-t2.ang[0],t2.ang[1]]):t2.ang);
+  const alt=add(t1.ang,minus?t2.ang:norm([-t2.ang[0],t2.ang[1]]));
+  const wr=[alt,add(res,[1,6]),add(res,[-1,6]),add(res,[1,3]),add(res,[-1,3]),add(res,[1,2])].filter(x=>A(x)!==A(res)).map(A);
+  const ex=`${term(t1.fk,t1.k,t1.neg)} = ${A(t1.ang)},&nbsp; ${term(t2.fk,t2.k,t2.neg)} = ${A(t2.ang)}. ${L('Значит','Демек')}, ${A(t1.ang)} ${minus?'−':'+'} ${t2.ang[0]<0?'('+A(t2.ang)+')':A(t2.ang)} = ${A(res)}.`;
+  return mkQ('sum',`${CALC()} <span class="m">${term(t1.fk,t1.k,t1.neg)} ${minus?'−':'+'} ${term(t2.fk,t2.k,t2.neg)}</span>`,A(res),wr,ex);
+}
+function gDefined(){
+  const bad=[['arcsin 1,2','1,2 &gt; 1'],['arccos √3','√3 ≈ 1,73 &gt; 1'],[`arcsin ${A([1,3])}`,`${A([1,3])} ≈ 1,05 &gt; 1`],['arccos(−1,5)','|−1,5| &gt; 1'],['arcsin √2','√2 ≈ 1,41 &gt; 1'],[`arccos ${H2}`,`${H2} ≈ 1,57 &gt; 1`]];
+  const good=['arcsin 0,9','arccos(−1)','arctg 5','arcctg(−100)',`arcsin ${A([1,4])}`,`arccos ${frac('√3','2')}`,'arctg √3','arcsin(−0,3)'];
+  const b=pick(bad);
+  return mkQ('prop',L('Какое из выражений <b>не имеет смысла</b>?','Қай өрнектің <b>мағынасы жоқ</b>?'),`<span class="m">${b[0]}</span>`,shuffle(good).map(x=>`<span class="m">${x}</span>`),
+    L(`Арксинус и арккосинус определены только для |a| ≤ 1, а здесь ${b[1]}. Арктангенс и арккотангенс определены для любого числа. Обратите внимание: ${A([1,4])} ≈ 0,79 &lt; 1, так что arcsin ${A([1,4])} смысл имеет.`,
+      `Арксинус пен арккосинус тек |a| ≤ 1 болғанда анықталған, ал мұнда ${b[1]}. Арктангенс пен арккотангенс кез келген сан үшін анықталған. Назар аударыңыз: ${A([1,4])} ≈ 0,79 &lt; 1, сондықтан arcsin ${A([1,4])} өрнегінің мағынасы бар.`));
+}
+function PROPS(){
+  const DOM=(f)=>L(`Область определения функции <span class="m">${f}</span>`,`<span class="m">${f}</span> функциясының анықталу облысы`);
+  const RNG=(f)=>L(`Область значений функции <span class="m">${f}</span>`,`<span class="m">${f}</span> функциясының мәндер жиыны`);
+  const EQ=(e)=>L(`Чему равно <span class="m">${e}</span>?`,`<span class="m">${e}</span> неге тең?`);
+  const SOLVE=L('Решите уравнение:','Теңдеуді шешіңдер:');
+  const NS_=L('нет решений','шешімі жоқ'), NM=L('не имеет смысла','мағынасы жоқ');
+  return [
+    [DOM('y = arcsin x'),'[−1; 1]',['(−∞; +∞)','[0; π]',R.seg],L('Синус любого угла лежит в [−1; 1], поэтому арксинус определён только для таких чисел.','Кез келген бұрыштың синусы [−1; 1] аралығында жатады, сондықтан арксинус тек осындай сандар үшін анықталған.')],
+    [RNG('y = arccos x'),'[0; π]',[R.seg,'(0; π)','[−1; 1]'],L('По определению арккосинус — угол из отрезка [0; π].','Анықтама бойынша арккосинус — [0; π] кесіндісіндегі бұрыш.')],
+    [RNG('y = arctg x'),R.segO,[R.seg,'(0; π)','(−∞; +∞)'],L(`Концы ±${H2} не входят: тангенс в этих точках не существует.`,`±${H2} ұштары кірмейді: бұл нүктелерде тангенс анықталмаған.`)],
+    [RNG('y = arcctg x'),'(0; π)',['[0; π]',R.segO,R.seg],L('Концы 0 и π не входят: котангенс в этих точках не существует.','0 және π ұштары кірмейді: бұл нүктелерде котангенс анықталмаған.')],
+    [DOM('y = arctg x'),'(−∞; +∞)',['[−1; 1]',R.segO,'[0; +∞)'],L('Тангенс принимает любые значения, поэтому арктангенс определён для любого числа.','Тангенс кез келген мән қабылдайды, сондықтан арктангенс кез келген сан үшін анықталған.')],
+    [EQ('arcsin(−a)'),'−arcsin a',['π − arcsin a','arcsin a','π + arcsin a'],L('Арксинус — нечётная функция.','Функция тақ, яғни arcsin(−a) = −arcsin a.')],
+    [EQ('arccos(−a)'),'π − arccos a',['−arccos a','arccos a − π',`${H2} − arccos a`],L('Точки с абсциссами a и −a симметричны относительно оси Oy, их углы в сумме дают π.','Кез келген a ∈ [−1; 1] үшін arccos a + arccos(−a) = π, немесе arccos(−a) = π − arccos a. Арккосинус жұп та, тақ та емес.')],
+    [EQ('arcctg(−a)'),'π − arcctg a',['−arcctg a',`${H2} − arcctg a`,'arcctg a − π'],L('Как и арккосинус, арккотангенс не является нечётной функцией: arcctg(−a) = π − arcctg a.','Арккотангенс жұп та, тақ та емес функция: arcctg(−a) = π − arcctg a тепе-теңдігі орындалады.')],
+    [EQ('arctg(−a)'),'−arctg a',['π − arctg a','arctg a',`${H2} − arctg a`],L('Арктангенс — нечётная функция.','Функция тақ, яғни arctg(−a) = −arctg a.')],
+    [`${CALC()} <span class="m">arcsin 0,37 + arccos 0,37</span>`,H2,['π','0','0,74'],L(`Для любого a из [−1; 1] верно arcsin a + arccos a = ${H2}.`,`Есте сақтаңдар: arcsin x + arccos x = ${H2}, мұндағы x ∈ [−1; 1].`)],
+    [`${CALC()} <span class="m">arctg 7 + arcctg 7</span>`,H2,['π','0','14'],L(`Для любого a верно arctg a + arcctg a = ${H2}.`,`Есте сақтаңдар: arctg x + arcctg x = ${H2}.`)],
+    [`${CALC()} <span class="m">sin(arcsin 0,3)</span>`,'0,3',['−0,3','0,7',NM],L('sin(arcsin a) = a при |a| ≤ 1.','|a| ≤ 1 болғанда sin(arcsin a) = a.')],
+    [`${CALC()} <span class="m">tg(arctg 5)</span>`,'5',['−5',frac('1','5'),NM],L('tg(arctg a) = a для любого a.','Кез келген a үшін tg(arctg a) = a.')],
+    [`${CALC()} <span class="m">arcsin(sin ${A([5,6])})</span>`,A([1,6]),[A([5,6]),A([-1,6]),A([1,3])],L(`${A([5,6])} не лежит в ${R.seg}. sin ${A([5,6])} = ${frac('1','2')}, а arcsin ${frac('1','2')} = ${A([1,6])}.`,`${A([5,6])} саны ${R.seg} кесіндісіне жатпайды. sin ${A([5,6])} = ${frac('1','2')}, ал arcsin ${frac('1','2')} = ${A([1,6])}.`)],
+    [`${CALC()} <span class="m">arccos(cos(−${A([1,4])}))</span>`,A([1,4]),[A([-1,4]),A([3,4]),A([7,4])],L(`cos(−${A([1,4])}) = ${frac('√2','2')}, а arccos ${frac('√2','2')} = ${A([1,4])} ∈ [0; π].`,`cos(−${A([1,4])}) = ${frac('√2','2')}, ал arccos ${frac('√2','2')} = ${A([1,4])} ∈ [0; π].`)],
+    [`${CALC()} <span class="m">arctg(tg ${A([3,4])})</span>`,A([-1,4]),[A([3,4]),A([1,4]),A([-3,4])],L(`tg ${A([3,4])} = −1, а arctg(−1) = ${A([-1,4])} ∈ ${R.segO}.`,`tg ${A([3,4])} = −1, ал arctg(−1) = ${A([-1,4])} ∈ ${R.segO}.`)],
+    [`${CALC()} <span class="m">cos(arcsin ${frac('3','5')})</span>`,frac('4','5'),['−'+frac('4','5'),frac('3','5'),frac('2','5')],L(`Пусть α = arcsin ${frac('3','5')}. Тогда α ∈ ${R.seg}, значит cos α ≥ 0, и cos α = √(1 − ${frac('9','25')}) = ${frac('4','5')}.`,`α = arcsin ${frac('3','5')} болсын. Онда α ∈ ${R.seg}, демек cos α ≥ 0, және cos α = √(1 − ${frac('9','25')}) = ${frac('4','5')}.`)],
+    [`${CALC()} <span class="m">sin(arccos(−0,6))</span>`,'0,8',['−0,8','0,6','−0,6'],L('Пусть α = arccos(−0,6). Тогда α ∈ [0; π], значит sin α ≥ 0, и sin α = √(1 − 0,36) = 0,8.','α = arccos(−0,6) болсын. Онда α ∈ [0; π], демек sin α ≥ 0, және sin α = √(1 − 0,36) = 0,8.')],
+    [`${SOLVE} <span class="m">arcsin x = ${A([1,6])}</span>`,frac('1','2'),[frac('√3','2'),'−'+frac('1','2'),NS_],L(`${A([1,6])} ∈ ${R.seg}, поэтому x = sin ${A([1,6])} = ${frac('1','2')}.`,`${A([1,6])} ∈ ${R.seg}, сондықтан x = sin ${A([1,6])} = ${frac('1','2')}.`)],
+    [`${SOLVE} <span class="m">arcsin x = ${A([2,3])}</span>`,NS_,[frac('√3','2'),'−'+frac('1','2'),'−'+frac('√3','2')],L(`Арксинус принимает значения только из ${R.seg}, а ${A([2,3])} туда не входит.`,`Арксинус тек ${R.seg} аралығынан мән қабылдайды, ал ${A([2,3])} оған кірмейді.`)],
+    [`${SOLVE} <span class="m">arccos x = ${A([2,3])}</span>`,'−'+frac('1','2'),[frac('1','2'),frac('√3','2'),NS_],L(`${A([2,3])} ∈ [0; π], поэтому x = cos ${A([2,3])} = −${frac('1','2')}.`,`${A([2,3])} ∈ [0; π], сондықтан x = cos ${A([2,3])} = −${frac('1','2')}.`)],
+    [`${SOLVE} <span class="m">arctg x = −${A([1,4])}</span>`,'−1',['1','−'+frac('√3','3'),NS_],`x = tg(−${A([1,4])}) = −1.`],
+  ];
+}
+function EQS(){
+  const N=', n ∈ ℤ';
+  const GEN_=e=>L(`Общая формула корней уравнения <span class="m">${e}</span>`,`<span class="m">${e}</span> теңдеуі түбірлерінің жалпы формуласы`);
+  const SV=L('Решите:','Шешіңдер:'), NS_=L('нет решений','шешімі жоқ'), SO=L('поэтому','сондықтан');
+  return [
+    [GEN_('sin x = a')+', |a| ≤ 1','(−1)ⁿ arcsin a + πn'+N,['±arcsin a + 2πn'+N,'arcsin a + πn'+N,'(−1)ⁿ arcsin a + 2πn'+N],L('Для синуса: x = (−1)ⁿ arcsin a + πn.','Синус үшін: x = (−1)ⁿ arcsin a + πn.')],
+    [GEN_('cos x = a')+', |a| ≤ 1','±arccos a + 2πn'+N,['(−1)ⁿ arccos a + πn'+N,'arccos a + πn'+N,'±arccos a + πn'+N],L('Для косинуса: x = ±arccos a + 2πn.','Косинус үшін: x = ±arccos a + 2πn.')],
+    [GEN_('tg x = a'),'arctg a + πn'+N,['arctg a + 2πn'+N,'±arctg a + πn'+N,'(−1)ⁿ arctg a + πn'+N],L('Период тангенса равен π, поэтому x = arctg a + πn.','Тангенстің периоды π-ге тең, сондықтан x = arctg a + πn.')],
+    [GEN_('ctg x = a'),'arcctg a + πn'+N,['arcctg a + 2πn'+N,'±arcctg a + 2πn'+N,'(−1)ⁿ arcctg a + πn'+N],L('Период котангенса равен π, поэтому x = arcctg a + πn.','Котангенстің периоды π-ге тең, сондықтан x = arcctg a + πn.')],
+    [`${SV} <span class="m">sin x = ${frac('1','2')}</span>`,`(−1)ⁿ ${A([1,6])} + πn`+N,[`±${A([1,6])} + 2πn`+N,`(−1)ⁿ ${A([1,3])} + πn`+N,`${A([1,6])} + πn`+N],`arcsin ${frac('1','2')} = ${A([1,6])}, ${SO} x = (−1)ⁿ ${A([1,6])} + πn.`],
+    [`${SV} <span class="m">cos x = −${frac('1','2')}</span>`,`±${A([2,3])} + 2πn`+N,[`±${A([1,3])} + 2πn`+N,`(−1)ⁿ ${A([2,3])} + πn`+N,`±${A([2,3])} + πn`+N],`arccos(−${frac('1','2')}) = π − ${A([1,3])} = ${A([2,3])}, ${SO} x = ±${A([2,3])} + 2πn.`],
+    [`${SV} <span class="m">tg x = −√3</span>`,`−${A([1,3])} + πn`+N,[`${A([1,3])} + πn`+N,`−${A([1,6])} + πn`+N,`−${A([1,3])} + 2πn`+N],`arctg(−√3) = −arctg √3 = −${A([1,3])}.`],
+    [`${SV} <span class="m">cos x = 2</span>`,NS_,['±arccos 2 + 2πn'+N,'2πn'+N,`±${A([1,3])} + 2πn`+N],L('|cos x| ≤ 1, а 2 &gt; 1, поэтому корней нет. Запись arccos 2 смысла не имеет.','|cos x| ≤ 1, ал 2 &gt; 1, сондықтан түбірі жоқ. arccos 2 жазуының мағынасы жоқ.')],
+    [`${SV} <span class="m">ctg x = 1</span>`,`${A([1,4])} + πn`+N,[`−${A([1,4])} + πn`+N,`${A([1,4])} + 2πn`+N,`${A([3,4])} + πn`+N],`arcctg 1 = ${A([1,4])}.`],
+    [`${SV} <span class="m">sin x = −${frac('√2','2')}</span>`,`(−1)ⁿ⁺¹ ${A([1,4])} + πn`+N,[`(−1)ⁿ ${A([1,4])} + πn`+N,`±${A([3,4])} + 2πn`+N,`−${A([1,4])} + πn`+N],L(`arcsin(−${frac('√2','2')}) = −${A([1,4])}, и (−1)ⁿ·(−${A([1,4])}) = (−1)ⁿ⁺¹ ${A([1,4])}.`,`arcsin(−${frac('√2','2')}) = −${A([1,4])}, және (−1)ⁿ·(−${A([1,4])}) = (−1)ⁿ⁺¹ ${A([1,4])}.`)],
+    [`${SV} <span class="m">cos x = 0</span>`,`${H2} + πn`+N,[`${H2} + 2πn`+N,'πn'+N,'2πn'+N],L('Частный случай: косинус равен нулю в точках пересечения окружности с осью Oy.','Дербес жағдай: косинус шеңбердің Oy осімен қиылысу нүктелерінде нөлге тең.')],
+    [`${SV} <span class="m">sin x = 0</span>`,'πn'+N,['2πn'+N,`${H2} + πn`+N,`${H2} + 2πn`+N],L('Частный случай: синус равен нулю в точках пересечения окружности с осью Ox.','Дербес жағдай: синус шеңбердің Ox осімен қиылысу нүктелерінде нөлге тең.')],
+  ];
+}
+const fromBank=(cat,b)=>{const [q,c,w,ex]=pick(b); return mkQ(cat,q,`<span class="m">${c}</span>`,w.map(x=>`<span class="m">${x}</span>`),ex);};
+const GEN={
+  val:()=>gValue(), sum:()=>gSum(),
+  prop:()=>rnd()<.2?gDefined():fromBank('prop',PROPS()),
+  eq:()=>fromBank('eq',EQS()),
+};
+GEN.all=()=>{const r=rnd(); return r<.35?GEN.val():r<.55?GEN.sum():r<.8?GEN.prop():GEN.eq();};
+const build=rec=>withSeed(rec.seed,()=>GEN[rec.cat]());
+
+/* ---------- отрисовка задания ---------- */
+const LET='АБВГ';
+function renderQ(box,q,chosen,{onAnswer,nextLabel,onNext}){
+  box.innerHTML=`<div class="qcard">
+    <div class="qcat">${q.cat}</div>
+    <div class="qtext">${q.q}</div>
+    <div class="opts">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}"><span class="k">${LET[i]}</span><span>${o}</span></button>`).join('')}</div>
+    <div class="fb"></div></div>`;
+  const btns=[...box.querySelectorAll('.opt')];
+  const showFb=(i,focus)=>{
+    const ok=i===q.ans;
+    btns.forEach(x=>{x.disabled=true;}); btns[q.ans].classList.add('right'); if(!ok) btns[i].classList.add('wrong');
+    const fb=box.querySelector('.fb');
+    fb.innerHTML=`<div class="expl ${ok?'ok':'no'}"><b>${ok?L('Верно!','Дұрыс!'):L('Неверно. Правильный ответ: ','Қате. Дұрыс жауап: ')+(ok?'':LET[q.ans])}</b>${q.ex}</div>`;
+    const nb=document.createElement('button'); nb.className='btn'; nb.textContent=nextLabel(); nb.style.marginTop='14px';
+    nb.addEventListener('click',onNext); fb.appendChild(nb); if(focus) nb.focus({preventScroll:true});
+  };
+  if(chosen!=null) showFb(chosen,false);
+  btns.forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.i; showFb(i,true); onAnswer(i===q.ans,i);}));
+}
+
+/* ---------- ТРЕНАЖЁР ---------- */
+const T={cat:'all',done:0,ok:0,streak:0,best:0,rec:null,chosen:null};
+try{ T.best=+localStorage.getItem('arc-best')||0; }catch(e){}
+function renderTrCat(){
+  const C_=[['all',L('Все темы','Барлық тақырыптар')],...Object.entries(CATN())];
+  $('#trCat').innerHTML=C_.map(([k,l])=>`<button data-c="${k}" aria-pressed="${k===T.cat}" style="font-family:var(--f-body)">${l}</button>`).join('');
+}
+$('#trCat').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; T.cat=b.dataset.c; [...$('#trCat').children].forEach(x=>x.setAttribute('aria-pressed',x===b)); nextTrain();});
+function stats(){ $('#sDone').textContent=T.done; $('#sOk').textContent=T.ok; $('#sStreak').textContent=T.streak; $('#sBest').textContent=T.best; }
+function drawTrain(){
+  renderQ($('#trBox'),build(T.rec),T.chosen,{nextLabel:()=>L('Следующее задание','Келесі тапсырма'),onNext:nextTrain,onAnswer:(ok,i)=>{
+    T.chosen=i; T.done++; if(ok){T.ok++;T.streak++; if(T.streak>T.best){T.best=T.streak; try{localStorage.setItem('arc-best',T.best);}catch(e){}}} else T.streak=0; stats();
+  }});
+}
+function nextTrain(){ T.rec={cat:T.cat,seed:newSeed()}; T.chosen=null; drawTrain(); }
+
+/* ---------- ТЕСТ ---------- */
+const TT={phase:'intro',recs:[],i:0,ok:0,chosen:[]};
+function drawTest(){ if(TT.phase==='intro') testIntro(); else if(TT.phase==='q') testStep(); else testEnd(); }
+function testIntro(){
+  let best=null; try{ best=localStorage.getItem('arc-test'); }catch(e){}
+  $('#testBox').innerHTML=`<div class="qcard">
+    <h2 style="margin:0">${L('Итоговый тест','Қорытынды тест')}</h2>
+    <p>${L('10 заданий: значения аркфункций, выражения, свойства и простейшие тригонометрические уравнения. После каждого ответа показывается разбор, в конце — итог и список ошибок.','10 тапсырма: аркфункциялардың мәндері, өрнектер, қасиеттер және қарапайым тригонометриялық теңдеулер. Әр жауаптан кейін талдау көрсетіледі, соңында — қорытынды және қателер тізімі.')}</p>
+    ${best!==null?`<p class="stat">${L('Ваш лучший результат','Ең жақсы нәтижеңіз')}: <b>${best} / 10</b></p>`:''}
+    <button class="btn" id="tStart">${L('Начать тест','Тестті бастау')}</button></div>`;
+  $('#tStart').addEventListener('click',startTest);
+}
+function startTest(){
+  TT.recs=shuffle(['val','val','val','val','sum','sum','prop','prop','eq','eq']).map(c=>({cat:c,seed:newSeed()}));
+  TT.i=0; TT.ok=0; TT.chosen=[]; TT.phase='q'; testStep();
+}
+function testStep(){
+  const q=build(TT.recs[TT.i]), box=$('#testBox'), ch=TT.chosen[TT.i];
+  box.innerHTML=`<div class="bar"><span class="stat">${L('Задание','Тапсырма')} <b>${TT.i+1}</b> / 10</span><span class="stat">${L('Верно','Дұрыс')}: <b>${TT.ok}</b></span></div>
+    <div class="progress" style="margin-bottom:16px"><i style="width:${(TT.i+(ch!=null?1:0))*10}%"></i></div><div id="tQ"></div>`;
+  renderQ($('#tQ'),q,ch,{nextLabel:()=>TT.i<9?L('Дальше','Әрі қарай'):L('Показать результат','Нәтижені көрсету'),
+    onNext:()=>{TT.i++; if(TT.i<10) testStep(); else {TT.phase='end'; testEnd();}},
+    onAnswer:(ok,i)=>{ TT.chosen[TT.i]=i; if(ok) TT.ok++; box.querySelector('.progress i').style.width=(TT.i+1)*10+'%'; box.querySelector('.stat:last-child b').textContent=TT.ok; }});
+}
+let savedScore=false;
+function testEnd(){
+  const s=TT.ok;
+  const msg = s>=9?L('Отлично! Тема усвоена.','Өте жақсы! Тақырып меңгерілді.')
+    : s>=7?L('Хорошо. Повторите задания, где были ошибки.','Жақсы. Қате жіберген тапсырмаларды қайталаңыз.')
+    : s>=5?L('Неплохо, но стоит ещё потренироваться во вкладке «Тренажёр».','Жаман емес, бірақ «Жаттықтырғыш» бөлімінде тағы жаттығу керек.')
+    : L('Вернитесь к теории и окружности, затем потренируйтесь ещё.','Теория мен шеңберге қайта оралып, сосын тағы жаттығыңыз.');
+  try{ const prev=localStorage.getItem('arc-test'); if(prev===null||s>+prev) localStorage.setItem('arc-test',s);}catch(e){}
+  const wrong=TT.recs.map((r,i)=>({q:build(r),c:TT.chosen[i]})).filter(x=>x.c!==x.q.ans);
+  $('#testBox').innerHTML=`<div class="qcard result">
+    <div class="qcat">${L('Результат','Нәтиже')}</div>
+    <div class="score">${s} <span style="font-size:1.4rem;color:var(--muted)">/ 10</span></div>
+    <p>${msg}</p>
+    ${wrong.length?`<h3>${L('Разбор ошибок','Қателерді талдау')}</h3><div class="review">${wrong.map(({q})=>`<div>${q.q}<br>${L('Ответ','Жауабы')}: ${q.opts[q.ans]}<br><span style="color:var(--muted)">${q.ex}</span></div>`).join('')}</div>`:''}
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="tAgain">${L('Пройти ещё раз','Қайта тапсыру')}</button><button class="btn ghost" id="tTrain">${L('Перейти в тренажёр','Жаттықтырғышқа өту')}</button></div></div>`;
+  $('#tAgain').addEventListener('click',startTest);
+  $('#tTrain').addEventListener('click',()=>showTab('train'));
+}
+
+/* ---------- переключатели ---------- */
+function renderAll(){ applyUI(); renderTheory(); drawCircle(); renderTrCat(); stats(); drawTrain(); drawTest(); }
+$('#langSw').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b||b.dataset.lang===LANG) return;
+  LANG=b.dataset.lang; try{localStorage.setItem('arc-lang',LANG);}catch(e){} renderAll();
+});
+const mq=matchMedia('(prefers-color-scheme: dark)');
+function effTheme(){ return document.documentElement.dataset.theme || (mq.matches?'dark':'light'); }
+function syncTheme(){ const t=effTheme(); [...$('#themeSw').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.th===t)); if(!$('#p-graphs').hidden) drawGraph(); }
+$('#themeSw').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  document.documentElement.dataset.theme=b.dataset.th; try{localStorage.setItem('arc-theme',b.dataset.th);}catch(e){} syncTheme();
+});
+try{ const t=localStorage.getItem('arc-theme'); if(t==='light'||t==='dark') document.documentElement.dataset.theme=t; }catch(e){}
+mq.addEventListener('change',syncTheme);
+new MutationObserver(syncTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+function setSize(px){ document.documentElement.style.fontSize=px+'px'; [...$('#sizeSw').children].forEach(b=>b.setAttribute('aria-pressed',+b.dataset.sz===px)); if(!$('#p-graphs').hidden) drawGraph(); }
+$('#sizeSw').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const px=+b.dataset.sz; setSize(px); try{localStorage.setItem('arc-size',px);}catch(e){} });
+(function(){ let px=22; try{ const v=+localStorage.getItem('arc-size'); if([16,22,28].includes(v)) px=v; }catch(e){} setSize(px); })();
+
+/* ---------- старт ---------- */
+T.rec={cat:'all',seed:newSeed()};
+buildChips();
+renderAll();
+syncTheme();
+(function(){ const h=location.hash.slice(1); let t=TABS.includes(h)?h:null;
+  if(!t){ try{ const s=localStorage.getItem('arc-tab'); if(TABS.includes(s)) t=s; }catch(e){} }
+  showTab(t||'theory'); })();
+</script>
